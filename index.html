@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>Goodreads API How-To Guide</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom Fonts -->
+    <link href="vendor/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic" rel="stylesheet" type="text/css">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+
+    <!-- Theme CSS -->
+    <link href="css/grayscale.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body id="page-top" data-spy="scroll" data-target=".navbar-fixed-top">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-custom navbar-fixed-top" role="navigation">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-main-collapse">
+                    Menu <i class="fa fa-bars"></i>     
+                </button>
+                <a class="navbar-brand page-scroll" href="#page-top">
+                    <i class="fa fa-wrench"></i> <span class="light">How-To: </span> Goodreads API
+                </a>
+            </div>
+
+            <!-- Collect the nav links, forms, and other content for toggling -->
+            <div class="collapse navbar-collapse navbar-right navbar-main-collapse">
+                <ul class="nav navbar-nav">
+                    <!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+                    <li class="hidden">
+                        <a href="#page-top"></a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </div>
+        <!-- /.container -->
+    </nav>
+
+    <!-- Intro Header -->
+    <header class="intro">
+        <div class="intro-body">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-8 col-md-offset-2">
+                        <h1 class="brand-heading">Goodreads API How-To</h1>
+                        <p class="intro-text">An introduction to utilizing some core features from the Goodreads API with Javascript</p>
+                        <a href="#authentication" class="btn btn-circle page-scroll">
+                            <i class="fa fa-angle-double-down animated"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Authentication Section -->
+    <section id="authentication" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Getting Authenticated</h2>
+                <p>In order to start interacting with the API, we must first request a developer key <a href="https://www.goodreads.com/api/keys">here</a>. We simply put in the application and company names and hit "Apply for a Developer Key."</p>
+                <p>Once a request for a developer key is made, we should receive both the key and secret strings. The key will be required for every request that is made to the API. The secret is only required when using the write API.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- API Call Section -->
+    <section id="api_call" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Making Calls to the API</h2>
+                <p>To make a call to the API, we simply send an HTTP request to one of the endpoints described <a href = "https://www.goodreads.com/api/index">here</a> with our developer key as a parameter in the URL. The code snippet below illustrates this process as a simple Ajax request to the author list endpoint, which retrieves a list of books given an author ID. The example here retrieves a list of books for author Tim O'Reilly.</p>
+                <pre><code>var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var request = new XMLHttpRequest();
+
+var api_call = "https://www.goodreads.com/author/list/18541?format=xml&amp;key=YOUR_KEY";
+request.open("GET", api_call, true);
+
+request.addEventListener("load", function() {
+
+    if (request.status &gt;= 200 &amp;&amp; request.status &lt; 400) {
+
+        response = request.responseText;
+        console.log(response);
+
+    } else console.log("Something went wrong " + request.statusText);
+
+});
+
+request.send(null);</code></pre>
+                <p><br>At the time of writing, Goodreads doesn't allow cross-domain requests from browsers so the code above was run with Node in a terminal. Node doesn't support the native XMLHttpRequest object that's found in browsers but a wrapper is available for installation via NPM that provides identical functionality. The code above invokes this Node wrapper with the line <code>var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;</code> .</p>
+                <p>The main request happens with the following lines:</p>
+                <pre><code>var request = new XMLHttpRequest();
+
+var api_call = "https://www.goodreads.com/author/list/18541?format=xml&amp;key=YOUR_KEY";
+request.open("GET", api_call, true);</code></pre>
+                <p><br>This uses the Node HTTP request wrapper to submit a GET request to the API URL stored in "api_call." The "true" parameter in the "open" method coupled with the remaining lines of code ensure that the request can be done asynchronously.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Parsing Output Section -->
+    <section id="parsing" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Parsing the Response Content</h2>
+                <p>The XML that we get back from the example call to the API for Tim O'Reilly's books looks like the image below:</p>
+                <img class = "img-responsive" src = "img/xml_screenshot.jpg">
+                <p><br>This is exactly what we get back from the Ajax call but in text form. In order to properly traverse the XML hierarchy, we need to parse the text into an object that we can navigate with Javascript. There is a package in Node that allows us to do this. The package is called <a href = "https://github.com/Leonidas-from-XIV/node-xml2js">xml2js</a> and it can be installed as usual with NPM. </p>
+                <p>The code below demonstrates the same call as earlier but with the added parsing piece.</p>
+                <pre><code>var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var parseString = require('xml2js').parseString;
+
+var request = new XMLHttpRequest();
+var api_call = "https://www.goodreads.com/author/list/18541?format=xml&amp;key=YOUR_KEY";
+
+request.open("GET", api_call, true);
+
+request.addEventListener("load", function() {
+
+    if (request.status >= 200 &amp;&amp; request.status &lt; 400) {
+
+        response = request.responseText;
+        var xml = parseString(response, function(err,result){
+            console.log(result.GoodreadsResponse.author[0].books[0].book);
+        });
+
+    } else console.log("Something went wrong " + request.statusText);
+
+});
+
+request.send(null); </code></pre>
+                <p><br>The additions to pay attention to are including the parsing function from the xml2js package with <code>var parseString = require('xml2js').parseString;</code>, <code>var xml = parseString(response, function(err,result){}</code> which is the call to the parsing function with the XML text response, and finally <code>console.log(result.GoodreadsResponse.author[0].books[0].book);</code> which prints out all of Tim O'Reilly's books to the console.</p>
+                <p>Traversing the object is fairly straightforward as all the levels in the XML hierarchy are stored as arrays of objects. We can walk down the levels by providing an index and calling the interior key corresponding to the data we're interested in. For example, <code>books[0].book</code> in the previous code snippet will get the list of books.
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Retrieving Author IDs -->
+    <section id="author_info" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Retrieving Author ID Numbers</h2>
+                <p>Now that we have the basics down we can put everything together to actually make use of the API. We'll do this with an example of how we can retrive a list of authors' books by searching with the author's name.</p>
+                <p>Unless you have a mental record of Goodreads author IDs of your favorite authors, you'll have to get this information to then be able to make a call to the author list endpoint. You can either do this by using your browser to go to an author's Goodreads page and reading off what their ID is from the URL or you can use the Goodreads API search functionality.</p>
+                <p>The Goodreads API search functionality involves making a request to <code>https://www.goodreads.com/search.xml?key=YOUR_KEY&amp;q=QUERY</code> where QUERY is replaced with the string that you want to search for. The code below uses this search functionality to retrieve the IDs of multiple authors asynchronously.</p>
+                <pre><code>var XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest;
+var parseString = require('xml2js').parseString;
+
+var authors = ["jrr+tolkien","jk+rowling","george+orwell"];
+
+var getAuthor = function(err,result) {
+    var results = result.GoodreadsResponse.search[0].results[0];
+    var author_id = results.work[0].best_book[0].author[0].id[0]._;
+
+    return author_id
+}
+
+var searchRequest = function(queries, parsingFunction) {
+    var result_set = [];
+    var search_call = "https://www.goodreads.com/search.xml?key=" + key
+    var count = 0
+
+    queries.forEach(function(query) {
+        var request = new XMLHttpRequest();
+        request.open("GET", search_call + "&amp;q=" + query, true);
+
+        request.addEventListener("load", function() {
+            if (request.status >= 200 &amp;&amp; request.status &lt; 400) {
+
+                response = request.responseText;
+                parseString(response, function(err, result) {
+
+                    result_set.push(parsingFunction(err, result));
+                    count++;
+                    if (count > queries.length - 1) finished();
+
+                });
+
+
+            } else console.log("Couldn't perform search request " + request.statusText);
+
+        });
+
+        request.send(null);
+
+    });
+
+    function finished() {
+        return(result_set);
+    }
+}                   </code></pre>
+                    <p><br>The searchRequest function loops through each author string in the authors array and makes an asynchronous request to the search API. This will return an XML with various books that match the author strings we specify. Usually the first result that is listed in the XML hierarchy is the most relevant.</p>
+                    <p>In addition to the array of authors we want to retrieve IDs for, We also feed searchRequest a parsing function that will take care of extracting the relevant data from the parsed XML object returned by parseString. This seperates the HTTP request code from the code that extracts the data we're looking for. If we ever want to retrieve other pieces of information from the search requests than the author IDs, we can just declare new parsing functions and feed them to searchRequest.</p>
+                    <p>The last bit of curious code is the declaration of <code>function finished() {}</code> inside of searchRequest. This is done in order to return the resulting array of author IDs only when the asynchronous requests are finished retrieving all of the data we need. If we didn't do this, searchRequest would return an empty result_set array before it's populated by the asynchronous portion of the function.</p>
+            </div>
+        </div>
+    </section>
+
+
+     <!-- Retrieving Authors Books -->
+    <section id="author-books" class="container content-section text-center">
+        <div class="row">
+            <div class="col-lg-8 col-lg-offset-2">
+                <h2>Retrieving A List of Authors' Books</h2>
+                
+                <p>To retrieve the books of authors, we write the apiCall function found bellow. This function is similar to searchRequest but instead of retrieving data from a text query, it retrieves various pieces of information from the author list endpoint given an array of author IDs.</p>
+                <p>We can again be flexible about what and how to extract the relevant pieces of information from the response we receive from the HTTP request by passing in parsing functions. Included below are two parsing functions, getAuthorName and getAuthorName, which will navigate the XML object to retrieve the name of the author from the ID and their list of books. The apiCall function will add what these two functions return to an object where the keys are the author names and the values are the list of books.</p>
+                <pre><code>var getBooks = function(err, result) {
+    return result.GoodreadsResponse.author[0].books[0].book;
+}
+
+var getAuthorName = function(err, result) {
+    return result.GoodreadsResponse.author[0].books[0].name;
+}
+
+var apiCall = function(author_ids) {
+    var result_obj = {};
+    var base_api_call = "https://www.goodreads.com/author/list/";
+    var key_api_call = "?format=xml&amp;key=" + key;
+    var count = 0;
+
+    author_ids.forEach(function(author_id) {
+        var request = new XMLHttpRequest();
+        request.open("GET",base_api_call + author_id + key_api_call, true);
+
+        request.addEventListener("load", function() {
+            if (request.status >= 200 &amp;&amp; request.stats &lt; 400) {
+
+                response = request.responseText;
+
+                parseString(response, function(err, result){
+
+                    var author_name = arguments[1](err, result);
+                    result_obj[author_name] = arguments[2](err, result);
+
+                    count++;
+                    if (count > author_ids - 1) finished();
+                });
+
+            } else console.log("Couldn't perform search request " + request.statusText);
+
+        });
+
+        request.send(null);
+    });
+
+    function finished() {
+        console.log(result_obj);
+    }
+}               </code></pre>
+                <p><br>Once again the requests to the API endpoint is done asynchonously so we have to put measures in place to handle what is returned from the requests at a later point in time. In the apiCall function, the nested finished function will be called once all of the requests are made and data is retrieved. This sort of thing can be handled much more elegantly with promises in Javascript. However, that is beyond the scope of this guide.</p>
+            </div>
+        </div>
+    </section>
+
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+        </div>
+    </footer>
+
+    <!-- jQuery -->
+    <script src="vendor/jquery/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+
+    <!-- Plugin JavaScript -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>
+
+    <!-- Theme JavaScript -->
+    <script src="js/grayscale.min.js"></script>
+
+</body>
+
+</html>
